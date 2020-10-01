@@ -20,13 +20,13 @@ data = [{
     "likes": 641065
 }]
 
-for index in range(len(data)):
-    requests.put(BASE + "video/" + str(index + 1), data[index])
+# INSERT INTO DATABASE
+# for index in range(len(data)):
+#     requests.put(BASE + "video/" + str(index + 1), data[index])
 
 # response = requests.delete(BASE + "video/2")
 
 # print(response.json())
 
-# input()
 # response = requests.get(BASE + "video/1")
 # print(response.json())
