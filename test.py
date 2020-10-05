@@ -21,12 +21,17 @@ data = [{
 }]
 
 # INSERT INTO DATABASE
-# for index in range(len(data)):
-#     requests.put(BASE + "video/" + str(index + 1), data[index])
-
-# response = requests.delete(BASE + "video/2")
+for index in range(len(data)):
+    requests.put(BASE + "video/" + str(index + 1), data[index])
 
 # print(response.json())
 
 # response = requests.get(BASE + "video/1")
+# print(response.json())
+
+# UPDATE
+# response = requests.patch(BASE + "video/1", {"name": "video update"})
+
+# DELETE
+# response = requests.delete(BASE + "video/4")
 # print(response.json())

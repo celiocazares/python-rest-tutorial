@@ -36,16 +36,22 @@ video_put_args.add_argument("likes",
                             help="Likes on the video",
                             required=True)
 
+video_update_args = reqparse.RequestParser()
+
+video_update_args.add_argument("name",
+                               type=str,
+                               help="Name of the video is required")
+video_update_args.add_argument("views", type=int, help="Views of the video")
+video_update_args.add_argument("likes", type=int, help="Likes on the video")
+
 
 # VALIDATION
-def abort_if_id_doesnt_exists(video_id):
-    if (video_id not in videos):
-        abort(404, message="Video id does not exist")
+def abort_if_id_doesnt_exists():
+    abort(404, message="Video id does not exist")
 
 
-def abort_if_id_exists(video_id):
-    if (video_id in videos):
-        abort(409, message="Video id already exists")
+def abort_if_id_exists():
+    abort(409, message="Video id already exists")
 
 
 resource_fields = {
@@ -59,12 +65,19 @@ resource_fields = {
 class Video(Resource):
     @marshal_with(resource_fields)
     def get(self, video_id):
-        result = VideoModel.query.get(video_id)
+        result = VideoModel.query.filter_by(id=video_id).first()
+        # result = VideoModel.query.filter_by(views=video_id).all()
+        if not result:
+            abort_if_id_doesnt_exists()
         return result
 
     @marshal_with(resource_fields)
     def put(self, video_id):
         args = video_put_args.parse_args()
+        result = VideoModel.query.filter_by(id=video_id).first()
+
+        if result:
+            abort_if_id_exists()
         video = VideoModel(id=video_id,
                            name=args['name'],
                            views=args['views'],
@@ -74,10 +87,32 @@ class Video(Resource):
         db.session.commit()
         return video, 201
 
+    @marshal_with(resource_fields)
+    def patch(self, video_id):
+        args = video_update_args.parse_args()
+        result = VideoModel.query.filter_by(id=video_id).first()
+        if not result:
+            abort_if_id_doesnt_exists()
+        if args['name']:
+            result.name = args['name']
+        if args['likes']:
+            result.likes = args['likes']
+        if args['views']:
+            result.views = args['views']
+
+        db.session.commit()
+
+        return result, 201
+
     def delete(self, video_id):
-        abort_if_id_doesnt_exists(video_id)
-        del videos[video_id]
-        return '', 204
+        result = VideoModel.query.filter_by(id=video_id).first()
+        if not result:
+            abort_if_id_doesnt_exists(video_id)
+
+        VideoModel.query.filter_by(id=video_id).delete()
+
+        db.session.commit()
+        return 'Video deleted successfully', 204
 
 
 api.add_resource(Video, "/video/<int:video_id>")
